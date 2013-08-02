@@ -217,14 +217,13 @@ package aerys.minko.render
 		
 		private function initialize() : void
 		{
-			_mouseManager.bind(this);
-			
 			addEventListener(Event.ADDED_TO_STAGE, addedToStageHandler);
 			addEventListener(Event.REMOVED_FROM_STAGE, removedFromStageHandler);
 		}
 		
 		private function addedToStageHandler(event : Event) : void
 		{
+			_mouseManager.bind(stage);
 			_keyboardManager.bind(stage);
 
 			parent.addEventListener(Event.RESIZE, parentResizedHandler);
