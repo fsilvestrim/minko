@@ -1,13 +1,14 @@
 package aerys.minko.render.resource.texture
 {
-	import aerys.minko.render.resource.Context3DResource;
-	import aerys.minko.type.enum.SamplerFormat;
-	
 	import flash.display.BitmapData;
 	import flash.display3D.textures.Texture;
 	import flash.display3D.textures.TextureBase;
 	import flash.geom.Matrix;
 	import flash.utils.ByteArray;
+	
+	import aerys.minko.render.resource.Context3DResource;
+	import aerys.minko.type.Signal;
+	import aerys.minko.type.enum.SamplerFormat;
 
 	/**
 	 * @inheritdoc
@@ -43,6 +44,15 @@ package aerys.minko.render.resource.texture
 		private var _height			: Number;
 
 		private var _update			: Boolean;
+		
+		private var _disposed		: Boolean;
+		
+		private var _contextLost	: Signal = new Signal("TextureResource.contextLost");
+		
+		public function get contextLost():Signal
+		{
+			return _contextLost;
+		}
 
 		public function get format() : uint
 		{
@@ -140,11 +150,14 @@ package aerys.minko.render.resource.texture
 			var oldMipmap	: Boolean = _mipmap;
 			var oldFormat	: String = _format;
 			
-			atf.position 	= 6;
+			if (atf[6] == 0xFF)
+				atf.position 	= 12;
+			else
+				atf.position 	= 6;
 			
 			var formatByte 	: uint = atf.readUnsignedByte();
 			
-			_atfFormat 		= formatByte & 7;
+			_atfFormat 		= formatByte & 0x7F;
 			_width 			= 1 << atf.readUnsignedByte();
 			_height 		= 1 << atf.readUnsignedByte();
 			_mipmap 		= atf.readUnsignedByte() > 1;
@@ -157,7 +170,7 @@ package aerys.minko.render.resource.texture
 				case 4: case 5: _format = FORMAT_COMPRESSED_ALPHA; break;
 				default: throw new Error("Invalid ATF format");
 			}
-
+			
 			if (_texture
 				&& (oldFormat != _format
 					|| oldMipmap != _mipmap
@@ -168,9 +181,20 @@ package aerys.minko.render.resource.texture
 				_texture = null;
 			}
 		}
+		
+		private function contextLostHandler(context : Context3DResource) : void
+		{
+			if (_disposed)
+				return;
+			_texture = null;
+			_contextLost.execute(this);
+		}
 
 		public function getTexture(context : Context3DResource) : TextureBase
 		{
+			if (!context.contextChanged.hasCallback(contextLostHandler))
+				context.contextChanged.add(contextLostHandler);
+			
 			if (!_texture && _width && _height)
 			{
 				if (_texture)
@@ -192,6 +216,7 @@ package aerys.minko.render.resource.texture
 
 			_atf = null;
 			_bitmapData = null;
+			
 			
 			return _texture;
 		}
@@ -233,12 +258,14 @@ package aerys.minko.render.resource.texture
 			else if (_atf)
 			{
 				_texture.uploadCompressedTextureFromByteArray(_atf, 0);
+				
                 _atf = null;
 			}
 		}
 		
 		public function dispose() : void
 		{
+			_disposed = true;
 			if (_texture)
 			{
 				_texture.dispose();
