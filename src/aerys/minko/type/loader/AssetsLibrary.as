@@ -3,6 +3,7 @@ package aerys.minko.type.loader
 	import aerys.minko.render.geometry.Geometry;
 	import aerys.minko.render.material.Material;
 	import aerys.minko.render.material.basic.BasicMaterial;
+	import aerys.minko.render.resource.texture.ITextureResource;
 	import aerys.minko.render.resource.texture.TextureResource;
 	import aerys.minko.scene.node.ISceneNode;
 	import aerys.minko.type.Signal;
@@ -18,7 +19,7 @@ package aerys.minko.type.loader
 		private var _layerList 		: Vector.<String>			= new Vector.<String>();
 		private var _geometryList	: Vector.<Geometry> 		= new Vector.<Geometry>();
 		private var _materialList	: Vector.<Material> 		= new Vector.<Material>();
-		private var _textureList	: Vector.<TextureResource> 	= new Vector.<TextureResource>();
+		private var _textureList	: Vector.<ITextureResource> = new Vector.<ITextureResource>();
 		private var _symbolList		: Vector.<ISceneNode>		= new Vector.<ISceneNode>();
 		
 		private var _geometries		: Object;
@@ -176,7 +177,7 @@ package aerys.minko.type.loader
 			}
 		}
 
-		public function setTexture(name : String, texture : TextureResource) : void
+		public function setTexture(name : String, texture : ITextureResource) : void
 		{
 			if (_textureList.indexOf(texture) == -1)
 			{

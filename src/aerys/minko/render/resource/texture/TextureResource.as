@@ -170,7 +170,7 @@ package aerys.minko.render.resource.texture
 				case 4: case 5: _format = FORMAT_COMPRESSED_ALPHA; break;
 				default: throw new Error("Invalid ATF format");
 			}
-			
+
 			if (_texture
 				&& (oldFormat != _format
 					|| oldMipmap != _mipmap
